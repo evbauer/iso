@@ -35,7 +35,8 @@ module iso_eep_support
 
   ! central limits for high- / intermediate-mass stars, set these from input eep_controls nml
   real(dp) :: center_gamma_limit=1d2
-  real(dp) :: center_carbon_limit=1d-4
+  real(dp) :: center_helium_limit=1.0d-2
+  real(dp) :: center_carbon_limit=1.0d-2
   real(dp) :: log_center_T_limit=9d0
   real(dp) :: high_mass_limit = 1d1 !Msun
   real(dp) :: very_low_mass_limit = 0.5d0 !Msun
@@ -47,7 +48,7 @@ module iso_eep_support
 
   ! quantities from history file that need to be identified
   integer :: i_age, i_mass, i_logLH, i_logLHe, i_logTe, i_logL
-  integer :: i_logg, i_Tc, i_Rhoc, i_Xc, i_Yc, i_he_core, i_co_core
+  integer :: i_logg, i_Tc, i_Rhoc, i_Xc, i_Yc, i_he_core, i_co_core, i_Deut
   integer :: i_Cc, i_gamma, i_surfH
 
   ! for use when constructing EEP distance
@@ -398,7 +399,8 @@ contains
 
     ! if the binfile does not exist, then we read the history files and write new
     ! .bins.  slow.
-    open(newunit=io,file=trim(trim(history_dir) // '/' // t% filename),status='old',action='read')
+    open(newunit=io,file=trim(trim(history_dir) // '/' // t% filename),status='old',action='read', iostat=ierr)
+    if(ierr/=0) return
     !read first 3 lines of header
     !currently don't use all of this info, but could...
     imass=0
@@ -621,7 +623,7 @@ contains
     type(isochrone_set), intent(in) :: set
     integer :: i, ierr, io, n
     n=set% number_of_isochrones
-    write(0,*) ' isochrone output file = ', trim(set% filename)
+    write(*,*) ' isochrone output file = ', trim(set% filename)
     open(newunit=io,file=trim(set% filename),action='write',status='unknown',iostat=ierr)
     write(io,'(a25,a8)') '# MIST version number  = ', set% version_string
     write(io,'(a25,i8)') '# MESA revision number = ', set% MESA_revision_number
@@ -769,7 +771,7 @@ contains
        write(io) s% iso(i)% data
     enddo
     close(io)
-    write(0,*) 'wrote isochrone bin file: ', trim(binfile)
+    write(*,*) 'wrote isochrone bin file: ', trim(binfile)
   end subroutine write_isochrone_bin
 
   subroutine read_isochrone_file(s,ierr)
@@ -963,6 +965,7 @@ contains
     col_name='log_center_T'; i_Tc=locate_column(col_name,ierr)
     col_name='log_center_Rho'; i_Rhoc=locate_column(col_name,ierr)
     col_name='center_h1'; i_Xc=locate_column(col_name,ierr)
+    col_name='center_h2'; i_Deut=locate_column(col_name,ierr)
     col_name='center_he4'; i_Yc=locate_column(col_name,ierr)
     col_name='center_c12'; i_Cc=locate_column(col_name,ierr)
     col_name='center_gamma'; i_gamma=locate_column(col_name,ierr)

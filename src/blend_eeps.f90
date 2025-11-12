@@ -73,7 +73,7 @@ contains
   function eep_blender(s_old,weights) result(s)
     type(track), intent(in) :: s_old(:)
     real(dp), intent(in) :: weights(:)
-    integer :: j,k,n
+    integer :: j,k,n, i1
     type(track) :: s
     !make sure everything is OK
     if(size(weights) /= size(s_old)) stop 'size(weights) != size(s_old)'
@@ -86,28 +86,39 @@ contains
        !other checks go here:
     enddo
 
+    if(s_old(1)% ntrack /= s_old(2)% ntrack)then
+       if(s_old(1)% ntrack < s_old(2)% ntrack)then
+          i1=1
+       else
+          i1=2
+       endif
+    else
+       i1=1
+    endif
+
     s% initial_mass = s_old(1)% initial_mass
-    s% Fe_div_H = s_old(1)% Fe_div_H
-    s% alpha_div_Fe = s_old(1)% alpha_div_Fe
-    s% version_string = s_old(1)% version_string
-    s% initial_Z = s_old(1)% initial_Z
-    s% initial_Y = s_old(1)% initial_Y
-    s% v_div_vcrit = s_old(1)% v_div_vcrit
-    s% has_phase = s_old(1)% has_phase
-    s% ncol = s_old(1)% ncol
+    s% Fe_div_H = s_old(i1)% Fe_div_H
+    s% alpha_div_Fe = s_old(i1)% alpha_div_Fe
+    s% version_string = s_old(i1)% version_string
+    s% initial_Z = s_old(i1)% initial_Z
+    s% initial_Y = s_old(i1)% initial_Y
+    s% v_div_vcrit = s_old(i1)% v_div_vcrit
+    s% has_phase = s_old(i1)% has_phase
+    s% ncol = s_old(i1)% ncol
     allocate(s% cols(s% ncol))
-    s% cols(:)% type = s_old(1)% cols(:)% type
-    s% cols(:)% loc  = s_old(1)% cols(:)% loc
-    s% cols(:)% name = s_old(1)% cols(:)% name
-    s% neep = s_old(1)% neep
-    s% ntrack = s_old(1)% ntrack
-    s% MESA_revision_number = s_old(1)% MESA_revision_number
-    s% star_type = s_old(1)% star_type
+    s% cols(:)% type = s_old(i1)% cols(:)% type
+    s% cols(:)% loc  = s_old(i1)% cols(:)% loc
+    s% cols(:)% name = s_old(i1)% cols(:)% name
+
+    s% neep = s_old(i1)% neep
+    s% ntrack = s_old(i1)% ntrack
+    s% MESA_revision_number = s_old(i1)% MESA_revision_number
+    s% star_type = s_old(i1)% star_type
     allocate(s% eep(s% neep))
-    s% eep = s_old(1)% eep
+    s% eep = s_old(i1)% eep
     allocate(s% tr(s% ncol, s% ntrack), s% phase(s% ntrack))
-    if(s_old(1)% has_phase)then
-       s% phase = s_old(1)% phase
+    if(s_old(i1)% has_phase)then
+       s% phase = s_old(i1)% phase
     endif
 
     s% tr = 0d0

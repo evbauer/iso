@@ -14,7 +14,7 @@ program iso_interp_met
   logical, parameter :: do_PAV = .true.
   
   !this helps speed up the i/o
-  make_bin_isos  =.true.
+  make_bin_isos  =.false.
 
   force_linear = .true.
 

@@ -11,12 +11,12 @@ module interp_support
 
   logical :: force_linear=.false.
 
-  real(dp), parameter :: Z_proto=1.42d-2
-  real(dp), parameter :: Y_proto=2.703d-1
-  real(dp), parameter :: X_proto=7.155d-1
+  real(dp), parameter :: Z_proto=1.69d-2
+  real(dp), parameter :: Y_proto=2.485d-1
+  real(dp), parameter :: X_proto=7.345d-1
   real(dp), parameter :: Y_BBN=2.49d-1
   real(dp), parameter :: Z_div_X_proto=log10(Z_proto/X_proto)
-  real(dp), parameter :: dY_dZ = (Y_proto-Y_BBN)/Z_proto
+  real(dp), parameter :: dY_dZ = 1.3 ! (Y_proto-Y_BBN)/Z_proto
 
 contains
 

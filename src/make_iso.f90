@@ -27,9 +27,11 @@ program make_isochrone
   logical :: do_smooth = .true.
   logical :: do_PAV = .true.
   logical :: do_linear_interpolation = .false.
+  logical :: require_consistent_neep = .false.
   real(dp) :: log_age_delta = 1d0
   namelist /iso_controls/ iso_debug, do_smooth, do_PAV, do_linear_interpolation, &
-       log_age_delta, very_low_mass_limit, set_max_eep_number, new_max_eep_number
+       log_age_delta, very_low_mass_limit, set_max_eep_number, new_max_eep_number, &
+       require_consistent_neep
 
   !begin
   ierr=0
@@ -202,14 +204,18 @@ contains
     enddo
     
     !now check each track to make sure it is complete for its type
-    do k=1,n
-       if(s(k)% star_type == star_high_mass .and. s(k)% neep < max_neep_high) then
-          skip(k,:) = .true.
-       else if(s(k)% initial_mass > very_low_mass_limit &
-            .and. s(k)% star_type == star_low_mass .and. s(k)% neep < max_neep_low) then
-          skip(k,:) = .true.
-       endif
-    enddo
+    if(require_consistent_neep)then
+       do k=1,n
+          if(s(k)% star_type == star_high_mass .and. s(k)% neep < max_neep_high) then
+             skip(k,:) = .true.
+          else if(s(k)% initial_mass > very_low_mass_limit &
+               .and. s(k)% star_type == star_low_mass .and. s(k)% neep < max_neep_low) then
+             skip(k,:) = .true.
+          else if(s(k)% initial_mass <= very_Low_mass_limit .and. s(k)% neep < 3) then
+             skip(k,:) = .true.
+          endif
+       enddo
+    endif
 
     max_age=age + log_age_delta
     min_age=age - log_age_delta
@@ -263,9 +269,9 @@ contains
           if(.not.skip(k,eep)) count(eep)=count(eep)+1
        enddo
 
-       if(iso_debug) write(*,*) '  EEP, count, n = ', eep, count(eep), n
+       !if(iso_debug) write(*,*) '  EEP, count, n = ', eep, count(eep), n
        if(count(eep) < 2)then
-          if(iso_debug) write(*,*) 'not enough eeps to interpolate'
+          !if(iso_debug) write(*,*) 'not enough eeps to interpolate'
           cycle eep_loop1
        endif
 
@@ -314,13 +320,13 @@ contains
           return
        endif
 
-       if(iso_debug) then 
-          write(*,*) ' loc, count = ', loc, count(eep)
-          write(*,*) skip(:,eep)
-          do k=1,count(eep)
-             write(*,*) masses(k), ages(k), age
-          enddo
-       endif
+       !if(iso_debug) then 
+       !   write(*,*) ' loc, count = ', loc, count(eep)
+       !   write(*,*) skip(:,eep)
+       !   do k=1,count(eep)
+       !      write(*,*) masses(k), ages(k), age
+       !   enddo
+       !endif
 
        !this block checks between two tracks at the current EEP to see if the 
        !age lies in between the two. if it does, then it outputs a linear mass 
@@ -336,7 +342,7 @@ contains
                    pass = pass + 1
                    if(pass==1)then
                       call monotonic_mass_range(ages,k,lo,hi)
-                      if(iso_debug) write(*,*) mass, masses(lo), masses(hi)
+                      !if(iso_debug) write(*,*) mass, masses(lo), masses(hi)
 
                       mass=interp_x_from_y(ages(lo:hi),masses(lo:hi),age,mass_age_string,ierr)
                       if(ierr/=0)then
@@ -344,13 +350,13 @@ contains
                          cycle eep_loop1
                       endif
 
-                      if(iso_debug) write(*,'(2i5,f9.5,3f14.9)') eep, pass, age, mass, masses(lo), masses(hi)
+                      !if(iso_debug) write(*,'(2i5,f9.5,3f14.9)') eep, pass, age, mass, masses(lo), masses(hi)
 
                       result1(i_Minit,eep) = mass
                       valid(eep)=1
                    else if(pass==2)then
                       call monotonic_mass_range(ages,k,lo,hi)
-                      if(iso_debug) write(*,*) mass, masses(lo), masses(hi)
+                      !if(iso_debug) write(*,*) mass, masses(lo), masses(hi)
 
                       mass=interp_x_from_y(ages(lo:hi),masses(lo:hi),age,mass_age_string,ierr)
                       if(ierr/=0)then
@@ -358,7 +364,7 @@ contains
                          cycle eep_loop1
                       endif
 
-                      if(iso_debug) write(*,'(2i5,f9.5,3f14.9)') eep, pass, age, mass, masses(lo), masses(hi)
+                      !if(iso_debug) write(*,'(2i5,f9.5,3f14.9)') eep, pass, age, mass, masses(lo), masses(hi)
 
                       result2(i_Minit,eep) = mass
                       valid(eep)=2

@@ -1,7 +1,7 @@
 module iso_eep_color
 
   !MESA modules
-  use interp_1d_lib_sg
+  use interp_1d_lib
 
   !local modules
   use iso_eep_support

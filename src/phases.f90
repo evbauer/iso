@@ -21,6 +21,8 @@ module phases
 ! endif
 
 !     FSPS phase information
+!    -2: pre-Deuterium burning
+!    -1: pre-main sequence (post Deuterium burning)
 !     0: main sequence
 !     1: sub giant branch
 !     2: red giant branch
@@ -32,6 +34,7 @@ module phases
 !     8: blue horizontal branch
 !     9: Wolf-Rayet (composition sets WC vs. WN)
 
+  real(dp), parameter :: pre_D_burn = -2d0
   real(dp), parameter :: pre_MS = -1d0
   real(dp), parameter :: MS = 0d0
   real(dp), parameter :: SGB = 1d0
@@ -89,6 +92,8 @@ contains
 
        if(t% tr(i_logTe,i) >= 4d0 .and. t% tr(i_surfH,i) <= 3d-1 .and. &
             t% star_type == star_high_mass) phase = Wolf_Rayet
+
+       if(phase == pre_MS .and. t% tr(i_deut,i) > 1d-10) phase = pre_D_burn
 
        t% phase(i) = phase
     enddo

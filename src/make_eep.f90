@@ -16,7 +16,7 @@ program make_eeps
   logical :: do_he_star = .false.
   real(dp) :: initial_Y, initial_Z, Fe_div_H, v_div_vcrit, alpha_div_Fe
 
-  namelist /eep_controls/ do_phases, center_gamma_limit, &
+  namelist /eep_controls/ do_phases, center_gamma_limit, center_helium_limit, &
        center_carbon_limit, log_center_T_limit, high_mass_limit, &
        very_low_mass_limit, weight_center_rho_T_by_Xc, Teff_scale, &
        logL_scale, age_scale, Tc_scale, Rhoc_scale, make_bin_tracks, &
@@ -38,6 +38,10 @@ program make_eeps
   do i=1,num
      call alloc_track(history_files(i),t)
      call read_history_file(t,ierr)
+     if(ierr/=0)then
+        write(*,*) 'problem opening file: ', t% filename
+        cycle
+     endif
      write(*,*) trim(t% filename), t% neep, t% MESA_revision_number
      !now set header info
      t% he_star = do_he_star

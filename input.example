@@ -3,21 +3,11 @@ example
 #initial Y, initial Z, [Fe/H], [alpha/Fe], v/vcrit (space separated)
    0.2703 1.42857e-02   0.00        0.00     0.4
 #data directories: 1) history files, 2) eeps, 3) isochrones
-data/tracks
-data/eeps
-data/isochrones
+/n/holystore01/LABS/conroy_lab/Lab/dotter/iso
+/n/holystore01/LABS/conroy_lab/Lab/dotter/iso
+/n/holystore01/LABS/conroy_lab/Lab/dotter/iso
 #read history_columns
 my_history_columns_basic.list
 #specify tracks
-4
-00008M.track
-00100M.track
-01000M.track
-10000M.track
-#specify isochrones
-isochrones_example.txt
-min_max
-log10
-51
-5.0
-10.0
+1
+00200M.track

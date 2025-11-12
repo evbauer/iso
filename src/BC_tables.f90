@@ -169,11 +169,14 @@ contains
     allocate(t% labels(t% num_filter), t% bcs(t% num_filter, t% num_Av, t% num_Rv))
     allocate(BCdata(t% num_filter))
 
-    read(io,*) !skip the column numbers
-    read(io,'(37x,99a20)') t% labels(1:t% num_Filter)
+    !read(io,*) !skip the column numbers
+    !read(io,'(37x,99a20)') t% labels(1:t% num_Filter)
     
     do r=1, t% num_Rv
        do i=1, t% num_Av
+
+           read(io,*) !skip the column numbers
+          read(io,'(37x,99a20)') t% labels(1:t% num_Filter)
 
           do k=1,t% num_filter
              allocate(t% bcs(k,i,r)% data(num_lines))
@@ -243,36 +246,36 @@ contains
     integer, intent(out) :: ierr
     real(sp) :: res, res1, res2, res3, res4, alfa, beta, y(4), x(4), dx, a(3)
 
-    if(Rv < t% Rv(1))then !off the edge
+    !if(Rv < t% Rv(1))then !off the edge
        res = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,1,ierr)
-       return
-    elseif(Rv > t% Rv(4)) then !off the edge
-       res = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
-       return
-    elseif(Rv >= t% Rv(1) .and. Rv < t% Rv(2))then !linear
-       res1 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,1,ierr)
-       res2 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,2,ierr)
-       alfa = Rv - t% Rv(1)
-       beta = 1.0_sp - alfa
-       res = alfa*res2 + beta*res1
-       return
-    elseif(Rv >= t% Rv(3) .and. Rv < t% Rv(4))then !linear
-       res3 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,3,ierr)
-       res4 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
-       alfa = Rv - t% Rv(3)
-       beta = 1.0_sp - alfa
-       res = alfa*res4 + beta*res3
-       return
-    else
-       y(1) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,1,ierr)
-       y(2) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,2,ierr)
-       y(3) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,3,ierr)
-       y(4) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
-       x = t% Rv
-       dx = Rv - x(2)
-       call interp_4pt_pm_sg(x,y,a)
-       res = y(2) + dx*(a(1) + dx*(a(2) + dx*a(3)))
-    endif
+    !   return
+    !elseif(Rv > t% Rv(4)) then !off the edge
+    !   res = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
+    !   return
+    !elseif(Rv >= t% Rv(1) .and. Rv < t% Rv(2))then !linear
+    !   res1 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,1,ierr)
+    !   res2 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,2,ierr)
+    !   alfa = Rv - t% Rv(1)
+    !   beta = 1.0_sp - alfa
+    !   res = alfa*res2 + beta*res1
+    !   return
+    !elseif(Rv >= t% Rv(3) .and. Rv < t% Rv(4))then !linear
+    !   res3 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,3,ierr)
+    !   res4 = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
+    !   alfa = Rv - t% Rv(3)
+    !   beta = 1.0_sp - alfa
+    !   res = alfa*res4 + beta*res3
+    !   return
+    !else
+    !   y(1) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,1,ierr)
+    !   y(2) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,2,ierr)
+    !   y(3) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,3,ierr)
+    !   y(4) = BC_interp_filter_fixed_Av_Rv(t,logg,logT,iflt,iAv,4,ierr)
+    !   x = t% Rv
+    !   dx = Rv - x(2)
+    !   call interp_4pt_pm_sg(x,y,a)
+    !   res = y(2) + dx*(a(1) + dx*(a(2) + dx*a(3)))
+    !endif
        
   end function BC_interp_filter_fixed_Av 
   

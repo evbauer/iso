@@ -23,12 +23,47 @@ program charlies_angel
   call get_command_argument(2,s% filename)
   call read_isochrone_file(s,ierr)
   if(ierr/=0) stop 'failed reading isochrone file'
-  
-  call get_command_argument(3,output)
 
-  call interpolate_eep_onto_iso(m,s,output) 
-  
+  !only do the append if the EEP covers the full age range of the isochrones
+  if(compatible_age_range(m,s))then
+     call get_command_argument(3,output)
+     call interpolate_eep_onto_iso(m,s,output) 
+  else
+     write(*,*) 'isochrone and eep ages are incompatible'
+  endif
 contains
+
+  logical function compatible_age_range(m,s)
+    type(track), intent(in) :: m
+    type(isochrone_set), intent(in) :: s
+    integer :: i, n
+    real(dp) :: max_eep_age, max_iso_age
+    real(dp), parameter :: ln10=2.302585092994046_dp
+
+    n=-1
+    do i=1,m% ncol
+       if(adjustl(adjustr(m% cols(i)% name)) == 'star_age') n=i
+    enddo
+
+    if(n < 0) then
+       compatible_age_range = .false.
+       return
+    endif
+
+    !determine min and max ages for EEP file
+    max_eep_age = m% tr(n,m% ntrack)
+
+    !determine min and max ages for ISO file
+    n=s% number_of_isochrones
+    max_iso_age = exp(ln10*s% iso(n)% age)
+
+    !write(*,*) 'max_eep_age = ', max_eep_age
+    !write(*,*) 'max_iso_age = ', max_iso_age
+
+    compatible_age_range = max_eep_age >= max_iso_age
+    
+  end function compatible_age_range
+    
   
   subroutine interpolate_eep_onto_iso(t,s,output)
     type(track), intent(in) :: t
@@ -69,29 +104,34 @@ contains
        q% iso(i)% cols = s% iso(i)% cols
        q% iso(i)% age = s% iso(i)% age
        call interpolate_age(t,pow10(q% iso(i)% age),res,phase,ierr)
-       if(ierr/=0) stop 99 
-       
-       q% iso(i)% neep = s% iso(i)% neep + 1
+       if(ierr/=0) then
+          !interpolation failed so copy the old isochrone to the new one
+          q% iso(i)% neep = s% iso(i)% neep
+          allocate(q% iso(i)% eep(q% iso(i)% neep))
+          allocate(q% iso(i)% data(q% iso(i)% ncol, q% iso(i)% neep))
+          if(q% iso(i)% has_phase) allocate( q% iso(i)% phase(q% iso(i)% neep))
 
-       allocate(q% iso(i)% eep(q% iso(i)% neep))
-       allocate(q% iso(i)% data(q% iso(i)% ncol, q% iso(i)% neep))
-       if(q% iso(i)% has_phase) allocate( q% iso(i)% phase(q% iso(i)% neep))
-       
-       q% iso(i)% eep(1) = s% iso(i)% eep(1) -1 
-       q% iso(i)% eep(2:q% iso(i)% neep) = s% iso(i)% eep
-
-       q% iso(i)% phase(1) = 0
-       q% iso(i)% phase(2:q% iso(i)% neep) = s% iso(i)% phase
-
-       if(phase < 1d1)then
-          q% iso(i)% phase(1) = phase
+          q% iso(i)% eep   = s% iso(i)% eep
+          q% iso(i)% phase = s% iso(i)% phase
+          q% iso(i)% data  = s% iso(i)% data
+          
        else
+          !interpolation was successful so create a new isochrone with additional point
+          q% iso(i)% neep = s% iso(i)% neep + 1
+
+          allocate(q% iso(i)% eep(q% iso(i)% neep))
+          allocate(q% iso(i)% data(q% iso(i)% ncol, q% iso(i)% neep))
+          if(q% iso(i)% has_phase) allocate( q% iso(i)% phase(q% iso(i)% neep))
+       
+          q% iso(i)% eep(1) = s% iso(i)% eep(1) -1 
+          q% iso(i)% eep(2:q% iso(i)% neep) = s% iso(i)% eep
+          
           q% iso(i)% phase(1) = s% iso(i)% phase(1)
+          q% iso(i)% phase(2:q% iso(i)% neep) = s% iso(i)% phase
+          
+          q% iso(i)% data(:,1) = res
+          q% iso(i)% data(:,2:q% iso(i)% neep) = s% iso(i)% data
        endif
-
-       q% iso(i)% data(:,1) = res
-       q% iso(i)% data(:,2:q% iso(i)% neep) = s% iso(i)% data
-
     enddo
 
     call write_isochrones_to_file(q)

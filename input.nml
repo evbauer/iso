@@ -23,26 +23,35 @@ output_to_eep_dir = .false.
 
 &iso_controls
 
+   require_consistent_neep = .true.
+  ! require_consistent_neep = .false.
+
    !if true and new_max_eep_number > 0 then isochrones 
    !will stop at this EEP number regardless of how many 
    !EEPs are in the .eep tracks
-   set_max_eep_number = .false.
-   new_max_eep_number = 904
+   !set_max_eep_number = .false.
+   !new_max_eep_number = 808
+
+   set_max_eep_number = .true.
+   new_max_eep_number = 1721
+   ! new_max_eep_number = 1409  !use this for feh_p050_afe_p4, feh_p050_afe_p2, feh_p025_afe_p6, and feh_m250_afe_m2
+   ! new_max_eep_number = 808  !use this for m275 and lower
 
    do_smooth = .false.
 
-   do_PAV = .false.
+   do_PAV = .true.
 
    do_linear_interpolation = .true.
 
    !the age-delta variable allows you to select tracks within a given range of age
    !namely +/-log_age_delta for each EEP; only those within the limits will be
    !considered for age-mass and mass-etc. interpolation
-   log_age_delta = 0.2
+   log_age_delta = 0.3
+   !log_age_delta = 0.4 ! use this one for m250_m2
 
-   very_low_mass_limit=0.6
+   very_low_mass_limit=0.61
 
-   iso_debug = .false.
+   iso_debug = .true.
 
 / !end of iso_controls namelist
 
@@ -54,13 +63,13 @@ output_to_eep_dir = .false.
 
    !if making isochrones repeatedly from the same set of tracks, set to true
    !this creates a binary track file that is read in much faster than text
-   make_bin_tracks = .false.
+   make_bin_tracks = .true.
 
    !include FSPS phases in EEPs and isochrones
-   do_phases = .false.
+   do_phases = .true. ! these aren't well-defined for the WD stage right now
 
    !set the WDCS primary EEP if center_gamma < center_gamma_limit
-   center_gamma_limit = 19
+   center_gamma_limit = 99
 
    !set the CarbonBurn primary EEP if center_c12 < center_carbon_limit
    center_carbon_limit = 0.05
@@ -69,21 +78,21 @@ output_to_eep_dir = .false.
    log_center_T_limit = 8.5 
 
    !set star_type to high mass star if M_init >= this
-   high_mass_limit = 10.0 !Msun
+   high_mass_limit = 8.0 !Msun
 
    !if Minit < this treat the last point in the track as the TAMS
    !regardless of center h1
-   very_low_mass_limit = 0.7 !Msun
+   very_low_mass_limit = 0.61 !Msun
 
    !weight the distance metric center Rho and T terms by central H
    !suggested values
    !weight_center_rho_T_by_Xc = .true.
-   !Tc_scale = 1d0
-   !Rhoc_scale = 1d0
+   Tc_scale = 1d0
+   Rhoc_scale = 1d0
    !or if not weighting these terms
-   weight_center_rho_T_by_Xc = .false.
-   Tc_scale = 1d-2
-   Rhoc_scale = 1d-2
+   !weight_center_rho_T_by_Xc = .false.
+   !Tc_scale = 0.0d0
+   !Rhoc_scale = 0.0d0
 
    !suggested values
    age_scale = 1d0

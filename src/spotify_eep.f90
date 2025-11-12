@@ -7,24 +7,29 @@ program eep_cmd
   type(track) :: t
   character(len=32) :: arg
   real(dp) :: scaling_factor
-  
-  call get_command_argument(1,t% filename)
-  
-  if(command_argument_count() > 1) then
-     call get_command_argument(2,arg)
-     read(arg,*) scaling_factor
+
+  if(command_argument_count()==0) then
+     write(*,*) 'spotify_eep [filename] [scaling factor]'
   else
-     scaling_factor = 0.0d0
-  endif
   
-  call read_eep(t,full_path=.true.,append_eep=.false.)
+     call get_command_argument(1,t% filename)
+  
+     if(command_argument_count() > 1) then
+        call get_command_argument(2,arg)
+        read(arg,*) scaling_factor
+     else
+        scaling_factor = 0.0d0
+     endif
+  
+     call read_eep(t,full_path=.true.,append_eep=.false.)
 
-  call spotify(t)
+     call spotify(t)
 
-  t% filename = trim(t% filename) // '_spot'
+     t% filename = trim(t% filename) // '_spot'
 
-  write(*,*) ' writing ', trim(t% filename)
-  call write_track(t)
+     write(*,*) ' writing ', trim(t% filename)
+     call write_track(t)
+  endif
 
 contains
 

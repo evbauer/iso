@@ -6,9 +6,9 @@
      
    ! information about abundance transitions
    
-      he_core_mass ! h1 boundary is outermost location where h1 mass fraction is < 0.01
-      c_core_mass ! he4 boundary is outermost location where h1 mass fraction is < 0.01
-      o_core_mass ! c12 boundary is outermost location where h1 mass fraction is < 0.01
+      he_core_mass ! h1 boundary is outermost location where h1 mass fraction is < 1e-4
+      c_core_mass ! he4 boundary is outermost location where h1 mass fraction is < 1e-4
+      o_core_mass ! c12 boundary is outermost location where h1 mass fraction is < 1e-4
          
    ! conditions near surface
 
@@ -16,16 +16,16 @@
       log_L_div_Ledd ! log10 (luminosity/Eddington luminosity)
       log_LH ! log10 power_h_burn
       log_LHe ! log10 power_he_burn
-      log_LZ  !log10 total burning power excluding LH and LHe and photodisintegrations
+      log_LZ  ! log10 total burning power excluding LH and LHe and photodisintegrations
       log_Teff ! log10 effective temperature
-      log_abs_Lgrav !log10 abs(eps_grav_integral) (in Lsun units)
+      log_abs_Lgrav ! log10 abs(eps_grav_integral) (in Lsun units)
       log_R ! log10 radius in Rsun units
       log_g ! log10 gravity
-      log_surf_z ! surface mass fraction in metals
+      log_surf_cell_z ! surface mass fraction in metals
       surf_avg_omega ! surf_v_rot/R
       surf_avg_v_rot ! km/sec rotational velocity at equator
       surf_num_c12_div_num_o16 ! ratio of number fractions, >1 for C star
-      v_wind_Km_per_s ! wind velocity
+      !v_wind_Km_per_s ! wind velocity
 
    ! just for massive rotating stars
 
@@ -35,28 +35,71 @@
       surf_avg_v_div_v_crit ! ratio of rotational velocity to critical rotational velocity
       surf_avg_Lrad_div_Ledd ! ratio of surface radiative luminosity to eddington luminosity
       v_div_csound_surf ! velocity divided by sound speed at outermost grid point
+      surf_r_equatorial_div_r ! equatorial radius
+      surf_r_polar_div_r ! polar radius
+      total_angular_momentum
 
+   ! gravity darkening
+      grav_dark_L_polar !Lsun 
+      grav_dark_Teff_polar !K
+      grav_dark_L_equatorial !Lsun 
+      grav_dark_Teff_equatorial !K
+
+              
    ! mass fractions near surface (averaged over the outer 1e−6% of the total stellar mass)
-	       
-      surface h1
-      surface he3
-      surface he4
-      surface li7
-      surface be9
-      surface b11
-      surface c12
-      surface c13
-      surface n14
-      surface o16
-      surface f19
-      surface ne20
-      surface na23
-      surface mg24
-      surface si28
-      surface s32
-      surface ca40
-      surface ti48
-      surface fe56
+       
+       surface h1  
+       surface h2  
+       surface he3 
+       surface he4
+       surface li7 
+       surface be7 
+       surface be9 
+       surface be10
+       surface b8  
+       surface c12 
+       surface c13 
+       surface n13 
+       surface n14 
+       surface n15 
+       surface o14 
+       surface o15 
+       surface o16 
+       surface o17 
+       surface o18 
+       surface f17 
+       surface f18 
+       surface f19 
+       surface ne18
+       surface ne19
+       surface ne20
+       surface ne21
+       surface ne22
+       surface na21
+       surface na22
+       surface na23
+       surface na24
+       surface mg23
+       surface mg24
+       surface mg25
+       surface mg26
+       surface al25
+       surface al26
+       surface al27
+       surface si27
+       surface si28
+       surface si29
+       surface si30
+       surface p30 
+       surface p31 
+       surface s31 
+       surface s32 
+       surface s33 
+       surface s34 
+       surface ca40
+       surface ti48
+       surface fe56
+
 
    ! conditions near center
 
@@ -68,17 +111,61 @@
       mass_conv_core ! mass of the convective core
         
    ! mass fractions near center (averaged over the inner 1e−6% of the total stellar mass)
-   
-      center h1
-      center he4
-      center c12
-      center n14
-      center o16
-      center ne20
-      center mg24
-      center si28
+
+       center h1  
+       center h2  
+       center he3 
+       center he4
+       center li7 
+       center be7 
+       center be9 
+       center be10
+       center b8  
+       center c12 
+       center c13 
+       center n13 
+       center n14 
+       center n15 
+       center o14 
+       center o15 
+       center o16 
+       center o17 
+       center o18 
+       center f17 
+       center f18 
+       center f19 
+       center ne18
+       center ne19
+       center ne20
+       center ne21
+       center ne22
+       center na21
+       center na22
+       center na23
+       center na24
+       center mg23
+       center mg24
+       center mg25
+       center mg26
+       center al25
+       center al26
+       center al27
+       center si27
+       center si28
+       center si29
+       center si30
+       center p30 
+       center p31 
+       center s31 
+       center s32 
+       center s33 
+       center s34 
+       center ca40
+       center ti48
+       center fe56
+
  
-   ! log10 total luminosity for reaction categories (Lsun units)
+    ! log10 total luminosity for reaction categories (Lsun units)
       
       pp
       cno
@@ -90,6 +177,7 @@
  
    !asteroseismic properties
       
+      apsidal_constant_k2
       delta_nu ! large frequency separation for p-modes (microHz)
          ! 1e6/(seconds for sound to cross diameter of star)
       delta_Pg ! g-mode period spacing for l=1 (seconds)
@@ -98,7 +186,7 @@
          ! nu_max = nu_max_sun * M/Msun / ((R/Rsun)^3 (Teff/Teff_sun)^0.5)
          ! with nu_max_sun = 3100 microHz, Teff_sun = 5777
       acoustic_cutoff ! 0.5*g*sqrt(gamma1*rho/P) at surface
-   
+               
    ! misc
       
       max_conv_vel_div_csound ! maximum value of the ratio of convective vel. to local sound speed
@@ -107,3 +195,20 @@
       min_Pgas_div_P ! beta to check stability
       max_L_rad_div_Ledd ! lambda to check stability
       e_thermal ! sum over all zones of Cp*T*dm
+              
+   ! convective envelope properties
+   
+      conv_env_top_mass ! TCZ in mass
+      conv_env_bot_mass ! BCZ in mass
+      conv_env_top_radius ! TCZ in radius
+      conv_env_bot_radius ! BCZ in radius 
+      conv_env_turnover_time_l_t ! mixing length evaluated at the BCZ / 
+                                 ! v_conv evaluated at one full mixing length above BCZ
+      conv_env_turnover_time_l_b ! mixing length evaluated at the BCZ / 
+                                 ! v_conv evaluated at one half mixing length above BCZ
+      conv_env_turnover_time_g ! dr/convective speed(r) integrated over the entire CZ
+
+      envelope_binding_energy         
+
+      total_moment_of_inertia 
+

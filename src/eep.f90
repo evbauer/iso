@@ -136,26 +136,28 @@ contains
     inc=1
     if(t% he_star) then !only do this section if starting with a He star
        t% EEP(ieep) = ZAHB(t,1); if(check(t,ieep)) return; ieep=ieep+1
-       t% EEP(ieep) = TAHB(t,1d-4,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
+       t% EEP(ieep) = TAHB(t,center_helium_limit,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        if(t% star_type == star_low_mass)then
           t% EEP(ieep) = TPAGB(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
           t% EEP(ieep) = PostAGB(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
+          t% EEP(ieep) = protoWD(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
           t% EEP(ieep) = WDCS(t, t% EEP(ieep-1)+inc)
        elseif(t% star_type == star_high_mass)then
           t% EEP(ieep) = CarbonBurn(t,t% EEP(ieep-1)+inc)
        endif
     else !normal H star 
        !t% EEP(ieep) = PreMS_Tc(t,5.0d0,1); if(check(t,ieep)) return; ieep=ieep+1
-       t% EEP(ieep) = PreMS_fudge(1); if(check(t,ieep)) return; ieep=ieep+1
+       t% EEP(ieep) = PreMS_deuterium(t,1.0e-10_dp,1); if(check(t,ieep)) return; ieep=ieep+1
        t% EEP(ieep) = ZAMS(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        t% EEP(ieep) = TAMS(t,3.5d-1,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        t% EEP(ieep) = TAMS(t,1d-12,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        t% EEP(ieep) = RGBTip(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        t% EEP(ieep) = ZAHB(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
-       t% EEP(ieep) = TAHB(t,1d-4,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
+       t% EEP(ieep) = TAHB(t,center_helium_limit,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
        if(t% star_type == star_low_mass)then
           t% EEP(ieep) = TPAGB(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
           t% EEP(ieep) = PostAGB(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
+          t% EEP(ieep) = protoWD(t,t% EEP(ieep-1)+inc); if(check(t,ieep)) return; ieep=ieep+1
           t% EEP(ieep) = WDCS(t, t% EEP(ieep-1)+inc)
        elseif(t% star_type == star_high_mass)then
           t% EEP(ieep) = CarbonBurn(t,t% EEP(ieep-1)+inc)
@@ -200,6 +202,27 @@ contains
 
   end function PreMS_Tc
 
+  function preMS_deuterium(t,Dmin,guess) result(PreMS)
+    type(track), intent(in) :: t
+    real(dp) :: Dmin
+    integer, intent(in) :: guess
+    integer :: i, my_guess, PreMS
+    PreMS = 0
+    if(guess < 1 .or. guess > t% ntrack) then 
+       my_guess = 1
+    else
+       my_guess = guess
+    endif
+
+    do i=my_guess, t% ntrack
+       if(t% tr(i_Deut,i) < Dmin)then
+          PreMS=i
+          return
+       endif
+    enddo
+    
+  end function preMS_deuterium
+  
   !an alternative to constant central temperature is constant age
   function PreMS_age(t,logAge,guess) result(PreMS)
     type(track), intent(in) :: t
@@ -227,16 +250,9 @@ contains
     enddo
   end function PreMS_age
 
-  integer function preMS_fudge(guess)
-    integer, intent(in) :: guess
-    preMS_fudge = guess
-  end function preMS_fudge
-  
   integer function ZAMS(t,guess)
     type(track), intent(in) :: t
-    real(dp) :: Xmax, Xmin, Xc
-!!$ real(dp) :: LH, Lmin
-!!$ real(dp), parameter :: Lfac = 9.99d-1 !Xfac = 9.8d-1
+    real(dp) :: Xmax, Xmin, Xc  
     integer, intent(in) :: guess
     integer :: i, my_guess, ZAMS1, ZAMS2, ZAMS3
 
@@ -454,6 +470,26 @@ contains
     endif
   end function PostAGB
 
+  integer function protoWD(t,guess)
+    type(track), intent(in) :: t
+    integer, intent(in) :: guess
+    integer :: my_guess, i
+    protoWD=0
+    if(guess < 1) then 
+       my_guess = 1
+    elseif(guess >= t% ntrack)then
+       return
+    else
+       my_guess = guess
+    endif
+    do i = my_guess, t% ntrack
+       if(t% tr(i_logg,i) > 6d0)then
+          protoWD=i
+          return
+       endif
+    enddo
+  end function protoWD
+  
   integer function WDCS(t,guess)
     type(track), intent(in) :: t
     integer, intent(in) :: guess
@@ -467,7 +503,8 @@ contains
        my_guess = guess
     endif
     do i = my_guess, t% ntrack
-       if(t% tr(i_gamma,i) >= center_gamma_limit)then
+       !if(t% tr(i_logL,i) <= -5.3d0)then
+       if(t% tr(i_Tc,i) <= 5.5d0)then
           WDCS=i
           return
        endif
@@ -478,7 +515,6 @@ contains
     type(track), intent(in) :: t
     integer, intent(in) :: guess
     integer :: my_guess, i
-    real(dp), parameter :: limit_XY=1d-8
     CarbonBurn = 0
     if(guess < 1)then
        my_guess = 1
@@ -488,7 +524,7 @@ contains
        my_guess = guess
     endif
     do i=my_guess, t% ntrack
-       if(t% tr(i_Xc,i) < limit_XY .and. t% tr(i_Yc,i) < limit_XY .and. t% tr(i_Cc,i) < center_carbon_limit)then
+       if( t% tr(i_Yc,i) < center_helium_limit .and. t% tr(i_Cc,i) < center_carbon_limit)then
           CarbonBurn=i
           exit
        endif
